@@ -8,32 +8,6 @@ export const AGENT_TABS: ReadonlyArray<{ id: AgentTab; label: string }> = [
   { id: "touch_grass_agent", label: "3: touch_grass_agent" },
 ] as const;
 
-export const WORK_TRACKS = [
-  {
-    title: "Onboarding API Overhaul",
-    metric: "+18% conversion ✨",
-    trend: "up",
-  },
-  {
-    title: "Database Query Tuning",
-    metric: "-320ms p99 latency",
-    trend: "down",
-  },
-  {
-    title: "Datadog Alert Cleanup",
-    metric: "-40% ops alert noise",
-    trend: "down",
-  },
-] as const;
-
-/** Canned replies so the prompt answers instead of swallowing input. */
-export const WORK_AGENT_REPLIES = [
-  "logged 214 commits, 61 PRs, and exactly 3 rage-quits.",
-  "peak commit hour was 11pm. second peak: 11am. no in between.",
-  "most edited file: onboarding/route.ts (47 revisions, no regrets).",
-  "longest CI wait: 14 min. spent it getting coffee. worth it.",
-] as const;
-
 export type DiffLine = {
   kind: "meta" | "hunk" | "removed" | "added" | "context";
   text: string;

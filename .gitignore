@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# work_agent knowledge base (personal notes, not for the repo)
+/src/data/knowledge_base.ts
+
 # vercel
 .vercel
 
