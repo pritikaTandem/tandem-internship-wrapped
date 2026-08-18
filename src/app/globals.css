@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #1a1625;
+  --foreground: #fff9e9;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-plum: #1a1625;
+  --color-pink: #ffb7b2;
+  --color-purple: #c7ceea;
+  --color-mint: #b5ead7;
+  --color-cream: #fff9e9;
+  --font-sans: var(--font-geist-mono);
+  --font-mono: var(--font-geist-mono);
+  --font-pixel: var(--font-press-start);
+  --shadow-pixel: 3px 3px 0 rgba(26, 22, 37, 0.9);
+  --shadow-pixel-lg: 6px 6px 0 rgba(26, 22, 37, 0.85);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.font-pixel {
+  font-family: var(--font-press-start), var(--font-geist-mono), monospace;
+  letter-spacing: 0.02em;
+}
+
+.menu-glass {
+  background:
+    linear-gradient(90deg, rgba(26, 22, 37, 0.92), rgba(74, 56, 89, 0.82)),
+    rgba(26, 22, 37, 0.85);
+  backdrop-filter: blur(14px);
+}
+
+.dock-glass {
+  background:
+    linear-gradient(135deg, rgba(255, 183, 178, 0.28), rgba(199, 206, 234, 0.32)),
+    rgba(255, 249, 233, 0.3);
+  backdrop-filter: blur(14px) saturate(1.15);
+}
+
+.sticky-note {
+  animation: note-arrival 500ms steps(4, end) both;
+}
+
+.scanlines {
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(26, 22, 37, 0.28) 4px
+  );
+}
+
+@keyframes note-arrival {
+  from {
+    opacity: 0;
+    transform: translate(-12px, -8px) rotate(-3deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-1deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
