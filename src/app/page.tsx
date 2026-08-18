@@ -1,5 +1,5 @@
 import { DesktopIcons } from "@/components/desktop/DesktopIcons";
-import { Dock } from "@/components/desktop/Dock";
+import { DesktopShell } from "@/components/desktop/DesktopShell";
 import { TopMenuBar } from "@/components/desktop/TopMenuBar";
 import { Wallpaper } from "@/components/desktop/Wallpaper";
 import { WidgetRail } from "@/components/desktop/WidgetRail";
@@ -11,7 +11,7 @@ export default function Home() {
       <TopMenuBar />
       <WidgetRail />
       <DesktopIcons />
-      <Dock />
+      <DesktopShell />
     </main>
   );
 }

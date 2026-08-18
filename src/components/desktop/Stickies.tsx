@@ -1,3 +1,8 @@
+"use client";
+
+import { motion, useDragControls } from "framer-motion";
+import type { PointerEvent } from "react";
+
 const TASKS = [
   { label: "Move to SF with hopes, dreams & a bucket list", complete: true },
   { label: "SWE intern @ Tandem", complete: true },
@@ -5,12 +10,28 @@ const TASKS = [
 ] as const;
 
 export function Stickies() {
+  const dragControls = useDragControls();
+  const startDrag = (event: PointerEvent<HTMLElement>) =>
+    dragControls.start(event);
+
   return (
-    <section
+    <motion.section
       aria-labelledby="stickies-title"
-      className="sticky-note w-[min(21.5rem,calc(100vw-2rem))] rotate-[-1deg] overflow-hidden border-2 border-plum text-plum shadow-pixel-lg"
+      drag
+      dragControls={dragControls}
+      dragListener={false}
+      dragMomentum={false}
+      dragElastic={0}
+      initial={{ opacity: 0, x: -12, y: -8, rotate: -3 }}
+      animate={{ opacity: 1, x: 0, y: 0, rotate: -1 }}
+      whileDrag={{ rotate: 0, scale: 1.02 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="w-[min(21.5rem,calc(100vw-2rem))] overflow-hidden border-2 border-plum text-plum shadow-pixel-lg"
     >
-      <header className="flex h-8 items-center justify-between border-b-2 border-plum bg-pink px-3">
+      <header
+        onPointerDown={startDrag}
+        className="flex h-8 cursor-grab items-center justify-between border-b-2 border-plum bg-pink px-3 active:cursor-grabbing"
+      >
         <h1
           id="stickies-title"
           className="font-pixel text-[9px] font-bold uppercase tracking-wide"
@@ -43,6 +64,6 @@ export function Stickies() {
       <footer className="border-t-2 border-dashed border-plum/35 bg-[#ffd7dc]/95 px-3 py-2 text-right font-pixel text-[7px] uppercase tracking-[0.2em]">
         one summer, all of it
       </footer>
-    </section>
+    </motion.section>
   );
 }

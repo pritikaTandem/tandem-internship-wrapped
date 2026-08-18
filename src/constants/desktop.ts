@@ -17,6 +17,7 @@ export type Wallpaper = {
 };
 
 export type DockItem = {
+  id: "code" | "spotify" | "terminal" | "photos" | "notes";
   label: string;
   icon: LucideIcon;
   accent: string;
@@ -68,16 +69,17 @@ export const WALLPAPERS: readonly Wallpaper[] = [
 ] as const;
 
 export const DOCK_ITEMS: readonly DockItem[] = [
-  { label: "Code", icon: Code, accent: "#c7ceea" },
-  { label: "Spotify", icon: Music, accent: "#b5ead7" },
+  { id: "code", label: "Code", icon: Code, accent: "#c7ceea" },
+  { id: "spotify", label: "Spotify", icon: Music, accent: "#b5ead7" },
   {
+    id: "terminal",
     label: ">_",
     icon: Terminal,
     accent: "#1a1625",
     iconClassName: "text-mint",
   },
-  { label: "Photos", icon: Image, accent: "#ffb7b2" },
-  { label: "Notes", icon: StickyNote, accent: "#fff2a8" },
+  { id: "photos", label: "Photos", icon: Image, accent: "#ffb7b2" },
+  { id: "notes", label: "Notes", icon: StickyNote, accent: "#fff2a8" },
 ] as const;
 
 export const DESKTOP_ICONS: readonly DesktopIcon[] = [

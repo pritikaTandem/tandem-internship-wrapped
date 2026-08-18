@@ -55,10 +55,6 @@ body {
   backdrop-filter: blur(14px) saturate(1.15);
 }
 
-.sticky-note {
-  animation: note-arrival 500ms steps(4, end) both;
-}
-
 .scanlines {
   pointer-events: none;
   background-image: repeating-linear-gradient(
@@ -67,17 +63,6 @@ body {
     transparent 3px,
     rgba(26, 22, 37, 0.28) 4px
   );
-}
-
-@keyframes note-arrival {
-  from {
-    opacity: 0;
-    transform: translate(-12px, -8px) rotate(-3deg);
-  }
-  to {
-    opacity: 1;
-    transform: translate(0, 0) rotate(-1deg);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
