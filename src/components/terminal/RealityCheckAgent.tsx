@@ -1,7 +1,9 @@
 "use client";
 
 import { useRevealLines } from "@/hooks/useRevealLines";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+
+const EXAMPLE_QUESTION = "what did i learn this summer?";
 
 const QUERY_TRACE = [
   "🧠 Agent Thinking...",
@@ -52,15 +54,20 @@ function ExchangeBlock({ exchange }: { exchange: Exchange }) {
   );
 }
 
-export function RealityCheckAgent() {
+export function RealityCheckAgent({ active }: { active: boolean }) {
   const [question, setQuestion] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [busy, setBusy] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     logRef.current?.scrollIntoView({ block: "end" });
   }, [exchanges]);
+
+  useEffect(() => {
+    if (active) inputRef.current?.focus();
+  }, [active]);
 
   const askQuestion = async (event: FormEvent) => {
     event.preventDefault();
@@ -100,6 +107,13 @@ export function RealityCheckAgent() {
     }
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Tab" && !question) {
+      event.preventDefault();
+      setQuestion(EXAMPLE_QUESTION);
+    }
+  };
+
   return (
     <div className="flex min-h-full flex-col gap-4">
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -125,12 +139,17 @@ export function RealityCheckAgent() {
           ask_reality_check_agent {">"}
         </label>
         <input
+          ref={inputRef}
           id="ask-reality-check-agent"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask a question..."
+          onKeyDown={handleKeyDown}
+          placeholder={
+            exchanges.length === 0
+              ? `ask a question like "${EXAMPLE_QUESTION}"`
+              : "ask another question..."
+          }
           disabled={busy}
-          autoFocus
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"

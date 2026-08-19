@@ -81,7 +81,7 @@ export function PhotosWindow({
           transition={{ duration: 0.18, ease: "easeOut" }}
           style={{ x, y, width: size?.width, height: size?.height, zIndex }}
           className={`fixed left-0 top-0 flex flex-col border-2 border-mint bg-plum/95 shadow-pixel-lg backdrop-blur-md ${
-            size ? "" : "w-[min(360px,calc(100vw-2rem))]"
+            size ? "" : "w-[min(480px,calc(100vw-2rem))]"
           }`}
         >
           <header

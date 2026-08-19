@@ -2,12 +2,12 @@
 
 import { TOUCH_GRASS_WARNINGS } from "@/constants/terminal";
 import confetti from "canvas-confetti";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
-const SUDO_PATTERN = /^sudo\s+\S/i;
 const REVEAL_DELAY_MS = 700;
+const EXAMPLE_QUESTION = "what did i do in berkeley/sf this summer?";
 
-type Entry = { command: string; response: string; isError: boolean };
+type Exchange = { question: string; response: string };
 
 function fireConfettiFrom(element: HTMLElement) {
   const rect = element.getBoundingClientRect();
@@ -22,81 +22,97 @@ function fireConfettiFrom(element: HTMLElement) {
   });
 }
 
-export function TouchGrassAgent({ onOpenPhotos }: { onOpenPhotos: () => void }) {
-  const [command, setCommand] = useState("");
-  const [entries, setEntries] = useState<Entry[]>([]);
+export function TouchGrassAgent({
+  active,
+  onOpenPhotos,
+}: {
+  active: boolean;
+  onOpenPhotos: () => void;
+}) {
+  const [question, setQuestion] = useState("");
+  const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [busy, setBusy] = useState(false);
+  const logRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const promptRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    promptRef.current?.scrollIntoView({ block: "end" });
-  }, [entries]);
+    logRef.current?.scrollIntoView({ block: "end" });
+  }, [exchanges]);
 
-  const runCommand = (event: FormEvent) => {
+  useEffect(() => {
+    if (active) inputRef.current?.focus();
+  }, [active]);
+
+  const askQuestion = (event: FormEvent) => {
     event.preventDefault();
-    const trimmed = command.trim();
+    const trimmed = question.trim();
     if (!trimmed || busy) return;
 
-    setCommand("");
-
-    if (SUDO_PATTERN.test(trimmed)) {
-      setBusy(true);
-      setEntries((current) => [
-        ...current,
-        { command: trimmed, response: "access granted. unlocking photos...", isError: false },
-      ]);
-      if (inputRef.current) fireConfettiFrom(inputRef.current);
-      window.setTimeout(() => {
-        onOpenPhotos();
-        setBusy(false);
-      }, REVEAL_DELAY_MS);
-      return;
-    }
-
-    setEntries((current) => [
+    setQuestion("");
+    setBusy(true);
+    setExchanges((current) => [
       ...current,
-      { command: trimmed, response: `command not found: ${trimmed.split(" ")[0]}`, isError: true },
+      { question: trimmed, response: "access granted. unlocking photos..." },
     ]);
+    if (inputRef.current) fireConfettiFrom(inputRef.current);
+    window.setTimeout(() => {
+      onOpenPhotos();
+      setBusy(false);
+    }, REVEAL_DELAY_MS);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Tab" && !question) {
+      event.preventDefault();
+      setQuestion(EXAMPLE_QUESTION);
+    }
   };
 
   return (
-    <div className="min-h-full space-y-3 overflow-y-auto">
-      {TOUCH_GRASS_WARNINGS.map((warning) => (
-        <p key={warning} className="text-pink">
-          {warning}
-        </p>
-      ))}
-      <p className="text-cream/70">
-        recommendation: close the laptop. the sun is still up.
-      </p>
-
-      {entries.map((entry, index) => (
-        <div key={index} className="space-y-1">
-          <p className="text-cream/70">
-            <span className="text-mint">$</span> {entry.command}
+    <div className="flex min-h-full flex-col gap-4">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {TOUCH_GRASS_WARNINGS.map((warning) => (
+          <p key={warning} className="text-pink">
+            {warning}
           </p>
-          <p className={entry.isError ? "text-pink" : "text-mint"}>{entry.response}</p>
-        </div>
-      ))}
+        ))}
+        <p className="mb-4 text-cream/70">
+          recommendation: close the laptop. the sun is still up.
+        </p>
+
+        {exchanges.length > 0 && (
+          <ul className="space-y-4">
+            {exchanges.map((exchange, index) => (
+              <li key={index} className="space-y-1">
+                <p className="text-cream/70">» {exchange.question}</p>
+                <p className="text-mint">{exchange.response}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div ref={logRef} />
+      </div>
 
       <form
-        ref={promptRef}
-        onSubmit={runCommand}
+        onSubmit={askQuestion}
         autoComplete="off"
         className="flex items-center gap-2 py-1"
       >
-        <label htmlFor="touch-grass-command" className="shrink-0 text-mint">
-          $
+        <label htmlFor="ask-touch-grass-agent" className="shrink-0 text-pink">
+          ask_touch_grass_agent {">"}
         </label>
         <input
           ref={inputRef}
-          id="touch-grass-command"
-          value={command}
-          onChange={(event) => setCommand(event.target.value)}
-          placeholder="run a command..."
+          id="ask-touch-grass-agent"
+          value={question}
+          onChange={(event) => setQuestion(event.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={
+            exchanges.length === 0
+              ? `ask a question like "${EXAMPLE_QUESTION}"`
+              : "ask another question..."
+          }
           disabled={busy}
-          autoFocus
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
