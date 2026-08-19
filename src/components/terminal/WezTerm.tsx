@@ -2,10 +2,7 @@
 
 import { AgentTabContent } from "@/components/terminal/AgentTabContent";
 import { AGENT_TABS, TERMINAL_PATH, type AgentTab } from "@/constants/terminal";
-import {
-  useResizableWindow,
-  type ResizeDirection,
-} from "@/hooks/useResizableWindow";
+import { RESIZE_HANDLES, useResizableWindow } from "@/hooks/useResizableWindow";
 import {
   AnimatePresence,
   motion,
@@ -20,30 +17,22 @@ const TRAFFIC_LIGHTS = [
   { action: "maximize", label: "Maximize window", color: "#28c840" },
 ] as const;
 
-const RESIZE_HANDLES: ReadonlyArray<{
-  direction: ResizeDirection;
-  className: string;
-}> = [
-  { direction: "n", className: "left-2 right-2 top-0 h-1.5 cursor-ns-resize" },
-  { direction: "s", className: "bottom-0 left-2 right-2 h-1.5 cursor-ns-resize" },
-  { direction: "w", className: "bottom-2 left-0 top-2 w-1.5 cursor-ew-resize" },
-  { direction: "e", className: "bottom-2 right-0 top-2 w-1.5 cursor-ew-resize" },
-  { direction: "nw", className: "left-0 top-0 size-3 cursor-nwse-resize" },
-  { direction: "ne", className: "right-0 top-0 size-3 cursor-nesw-resize" },
-  { direction: "sw", className: "bottom-0 left-0 size-3 cursor-nesw-resize" },
-  { direction: "se", className: "bottom-0 right-0 size-3 cursor-nwse-resize" },
-];
-
 export function WezTerm({
   isOpen,
   isCollapsed,
   onClose,
   onToggleCollapse,
+  onOpenPhotos,
+  zIndex,
+  onFocus,
 }: {
   isOpen: boolean;
   isCollapsed: boolean;
   onClose: () => void;
   onToggleCollapse: () => void;
+  onOpenPhotos: () => void;
+  zIndex: number;
+  onFocus: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<AgentTab>("work_agent");
   const [isMaximized, setIsMaximized] = useState(false);
@@ -78,21 +67,23 @@ export function WezTerm({
           dragListener={false}
           dragMomentum={false}
           dragElastic={0}
+          onPointerDownCapture={onFocus}
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
           style={
             isMaximized
-              ? undefined
+              ? { zIndex }
               : {
                   x,
                   y,
                   width: size?.width,
                   height: isCollapsed ? undefined : size?.height,
+                  zIndex,
                 }
           }
-          className={`fixed z-50 flex flex-col border-2 border-pink bg-plum/95 shadow-pixel-lg backdrop-blur-md ${
+          className={`fixed flex flex-col border-2 border-pink bg-plum/95 shadow-pixel-lg backdrop-blur-md ${
             isMaximized
               ? "inset-x-4 bottom-28 top-14 sm:inset-x-16"
               : `left-0 top-0 ${size ? "" : "w-[min(620px,calc(100vw-2rem))]"} ${
@@ -159,7 +150,7 @@ export function WezTerm({
                 aria-labelledby={`tab-${activeTab}`}
                 className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-[11px] leading-6 sm:text-xs"
               >
-                <AgentTabContent activeTab={activeTab} onTouchGrass={onClose} />
+                <AgentTabContent activeTab={activeTab} onOpenPhotos={onOpenPhotos} />
               </div>
             </>
           )}

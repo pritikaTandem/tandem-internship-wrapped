@@ -52,7 +52,7 @@ function ExchangeBlock({ exchange }: { exchange: Exchange }) {
   );
 }
 
-export function LearningsAgent() {
+export function RealityCheckAgent() {
   const [question, setQuestion] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [busy, setBusy] = useState(false);
@@ -73,7 +73,7 @@ export function LearningsAgent() {
     setExchanges((current) => [...current, { question: trimmed, reply: "" }]);
 
     try {
-      const response = await fetch("/api/learnings", {
+      const response = await fetch("/api/reality-check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: trimmed }),
@@ -91,7 +91,7 @@ export function LearningsAgent() {
       setExchanges((current) =>
         current.map((item, itemIndex) =>
           itemIndex === index
-            ? { ...item, reply: "- learnings_agent dropped the connection." }
+            ? { ...item, reply: "- reality_check_agent dropped the connection." }
             : item,
         ),
       );
@@ -121,11 +121,11 @@ export function LearningsAgent() {
         autoComplete="off"
         className="flex items-center gap-2 py-1"
       >
-        <label htmlFor="ask-learnings-agent" className="shrink-0 text-pink">
-          ask_learnings_agent {">"}
+        <label htmlFor="ask-reality-check-agent" className="shrink-0 text-pink">
+          ask_reality_check_agent {">"}
         </label>
         <input
-          id="ask-learnings-agent"
+          id="ask-reality-check-agent"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           placeholder="Ask a question..."

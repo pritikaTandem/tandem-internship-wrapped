@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 const MODEL = "gemini-3.5-flash";
 
-const SYSTEM_PROMPT = `You are Pritika's learnings_agent, a terminal assistant that reflects on lessons from her internship.
+const SYSTEM_PROMPT = `You are Pritika's reality_check_agent, a terminal assistant that reflects on lessons from her internship.
 
 Use ONLY the knowledge base below, which is organized into an "Expectations" section (what she assumed going in) and a "Reality" section (what she actually learned). Do not invent facts. If the knowledge base has nothing relevant to the question, say so plainly instead of making something up.
 
@@ -48,6 +48,6 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     });
   } catch {
-    return NextResponse.json({ error: "learnings_agent lost the plot." }, { status: 502 });
+    return NextResponse.json({ error: "reality_check_agent lost the plot." }, { status: 502 });
   }
 }

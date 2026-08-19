@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Press_Start_2P } from "next/font/google";
+import { Caveat, Geist_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
 const geistMono = Geist_Mono({
@@ -13,6 +13,11 @@ const pressStart = Press_Start_2P({
   subsets: ["latin"],
 });
 
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Pixel Desktop",
   description: "A cozy retro macOS-inspired desktop.",
@@ -22,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistMono.variable} ${pressStart.variable} h-full`}
+      className={`${geistMono.variable} ${pressStart.variable} ${caveat.variable} h-full`}
     >
       <body className="min-h-full">{children}</body>
     </html>

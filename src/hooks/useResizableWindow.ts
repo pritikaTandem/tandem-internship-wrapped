@@ -12,6 +12,21 @@ import {
 
 export type ResizeDirection = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
+/** Shared hit-target layout for the resize handles rendered around a window's edges. */
+export const RESIZE_HANDLES: ReadonlyArray<{
+  direction: ResizeDirection;
+  className: string;
+}> = [
+  { direction: "n", className: "left-2 right-2 top-0 h-1.5 cursor-ns-resize" },
+  { direction: "s", className: "bottom-0 left-2 right-2 h-1.5 cursor-ns-resize" },
+  { direction: "w", className: "bottom-2 left-0 top-2 w-1.5 cursor-ew-resize" },
+  { direction: "e", className: "bottom-2 right-0 top-2 w-1.5 cursor-ew-resize" },
+  { direction: "nw", className: "left-0 top-0 size-3 cursor-nwse-resize" },
+  { direction: "ne", className: "right-0 top-0 size-3 cursor-nesw-resize" },
+  { direction: "sw", className: "bottom-0 left-0 size-3 cursor-nesw-resize" },
+  { direction: "se", className: "bottom-0 right-0 size-3 cursor-nwse-resize" },
+];
+
 type Size = { width: number; height: number };
 
 type ResizeSession = Size & {
