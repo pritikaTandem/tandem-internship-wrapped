@@ -1,48 +1,41 @@
 "use client";
 
-import { useRevealLines } from "@/hooks/useRevealLines";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 const EXAMPLE_QUESTION = "what did i work on this summer?";
+const PIXEL_BLOCK_COUNT = 8;
+const PIXEL_BLOCK_MS = 150;
 
-const QUERY_TRACE = [
-  "🧠 Agent Thinking...",
-  "↳ [Tool Call] query_knowledge_base...",
-] as const;
+type Exchange = { question: string; compiling: boolean };
 
-type Exchange = {
-  question: string;
-  reply: string;
-};
-
-function TraceLine({ text }: { text: string }) {
+function PixelLoadingBar({ litBlocks }: { litBlocks: number }) {
   return (
-    <p className={text.startsWith("↳") ? "text-purple" : "text-pink"}>{text}</p>
+    <div className="flex items-center gap-2">
+      <span className="text-cream/70">compiling wrapped...</span>
+      <div className="flex gap-0.5">
+        {Array.from({ length: PIXEL_BLOCK_COUNT }, (_, i) => (
+          <div
+            key={i}
+            className={`h-3 w-2.5 border border-plum/40 ${
+              i < litBlocks ? "bg-mint" : "bg-plum/30"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
-function ExchangeBlock({ exchange }: { exchange: Exchange }) {
-  const revealed = useRevealLines(QUERY_TRACE, 400);
-  const ready = revealed >= QUERY_TRACE.length;
-
-  return (
-    <li className="space-y-1">
-      <p className="text-cream/70">» {exchange.question}</p>
-      {QUERY_TRACE.slice(0, revealed).map((line) => (
-        <TraceLine key={line} text={line} />
-      ))}
-      {ready && (
-        <pre className="whitespace-pre-wrap break-words text-cream">
-          {exchange.reply || "..."}
-        </pre>
-      )}
-    </li>
-  );
-}
-
-export function WorkAgent({ active }: { active: boolean }) {
+export function WorkAgent({
+  active,
+  onOpenWrapped,
+}: {
+  active: boolean;
+  onOpenWrapped: () => void;
+}) {
   const [question, setQuestion] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [litBlocks, setLitBlocks] = useState(0);
   const [busy, setBusy] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -55,42 +48,26 @@ export function WorkAgent({ active }: { active: boolean }) {
     if (active) inputRef.current?.focus();
   }, [active]);
 
-  const askQuestion = async (event: FormEvent) => {
+  const askQuestion = (event: FormEvent) => {
     event.preventDefault();
     const trimmed = question.trim();
     if (!trimmed || busy) return;
 
-    const index = exchanges.length;
     setQuestion("");
     setBusy(true);
-    setExchanges((current) => [...current, { question: trimmed, reply: "" }]);
+    setLitBlocks(0);
+    setExchanges((current) => [...current, { question: trimmed, compiling: true }]);
 
-    try {
-      const response = await fetch("/api/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed }),
-      });
-      const reply = response.ok
-        ? await response.text()
-        : `[error] ${(await response.json().catch(() => null))?.error ?? "request failed"}`;
-
-      setExchanges((current) =>
-        current.map((item, itemIndex) =>
-          itemIndex === index ? { ...item, reply } : item,
-        ),
-      );
-    } catch {
-      setExchanges((current) =>
-        current.map((item, itemIndex) =>
-          itemIndex === index
-            ? { ...item, reply: "[error] work_agent dropped the connection." }
-            : item,
-        ),
-      );
-    } finally {
-      setBusy(false);
-    }
+    let block = 0;
+    const interval = window.setInterval(() => {
+      block += 1;
+      setLitBlocks(block);
+      if (block >= PIXEL_BLOCK_COUNT) {
+        window.clearInterval(interval);
+        onOpenWrapped();
+        setBusy(false);
+      }
+    }, PIXEL_BLOCK_MS);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -104,12 +81,14 @@ export function WorkAgent({ active }: { active: boolean }) {
     <div className="flex min-h-full flex-col gap-4">
       <div className="min-h-0 flex-1 overflow-y-auto">
         {exchanges.length > 0 && (
-          <ul className="space-y-4">
+          <ul className="space-y-2">
             {exchanges.map((exchange, index) => (
-              <ExchangeBlock
-                key={`${exchange.question}-${index}`}
-                exchange={exchange}
-              />
+              <li key={index} className="space-y-1">
+                <p className="text-cream/70">» {exchange.question}</p>
+                {index === exchanges.length - 1 && busy && (
+                  <PixelLoadingBar litBlocks={litBlocks} />
+                )}
+              </li>
             ))}
           </ul>
         )}

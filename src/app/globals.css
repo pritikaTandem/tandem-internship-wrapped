@@ -17,6 +17,7 @@
   --font-mono: var(--font-geist-mono);
   --font-pixel: var(--font-press-start);
   --font-handwritten: var(--font-caveat);
+  --font-wrapped: var(--font-poppins);
   --shadow-pixel: 3px 3px 0 rgba(26, 22, 37, 0.9);
   --shadow-pixel-lg: 6px 6px 0 rgba(26, 22, 37, 0.85);
 }
@@ -44,6 +45,10 @@ body {
 
 .font-handwritten {
   font-family: var(--font-caveat), cursive;
+}
+
+.font-wrapped {
+  font-family: var(--font-poppins), ui-sans-serif, sans-serif;
 }
 
 .menu-glass {

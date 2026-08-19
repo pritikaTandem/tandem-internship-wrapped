@@ -12,14 +12,16 @@ import { type AgentTab } from "@/constants/terminal";
 export function AgentTabContent({
   activeTab,
   onOpenPhotos,
+  onOpenWrapped,
 }: {
   activeTab: AgentTab;
   onOpenPhotos: () => void;
+  onOpenWrapped: () => void;
 }) {
   return (
     <>
       <div className={activeTab === "work_agent" ? "h-full" : "hidden"}>
-        <WorkAgent active={activeTab === "work_agent"} />
+        <WorkAgent active={activeTab === "work_agent"} onOpenWrapped={onOpenWrapped} />
       </div>
       <div className={activeTab === "reality_check_agent" ? "h-full" : "hidden"}>
         <RealityCheckAgent active={activeTab === "reality_check_agent"} />

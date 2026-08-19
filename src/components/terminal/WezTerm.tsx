@@ -18,6 +18,7 @@ export function WezTerm({
   onClose,
   onToggleCollapse,
   onOpenPhotos,
+  onOpenWrapped,
   zIndex,
   onFocus,
 }: {
@@ -26,6 +27,7 @@ export function WezTerm({
   onClose: () => void;
   onToggleCollapse: () => void;
   onOpenPhotos: () => void;
+  onOpenWrapped: () => void;
   zIndex: number;
   onFocus: () => void;
 }) {
@@ -36,7 +38,12 @@ export function WezTerm({
   const dragControls = useDragControls();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const { size, startResize } = useResizableWindow({ x, y, windowRef });
+  const { size, startResize, clampToViewport } = useResizableWindow({
+    x,
+    y,
+    windowRef,
+    centerOnMountWidth: 760,
+  });
 
   const handleControl = (action: (typeof TRAFFIC_LIGHTS)[number]["action"]) => {
     if (action === "close") onClose();
@@ -61,6 +68,7 @@ export function WezTerm({
       dragListener={false}
       dragMomentum={false}
       dragElastic={0}
+      onDragEnd={clampToViewport}
       onPointerDownCapture={onFocus}
       initial={false}
       animate={{ opacity: isOpen ? 1 : 0, scale: isOpen ? 1 : 0.96 }}
@@ -143,7 +151,11 @@ export function WezTerm({
           aria-labelledby={`tab-${activeTab}`}
           className="min-h-0 flex-1 overflow-y-auto p-4 font-mono text-xs leading-6 sm:text-sm"
         >
-          <AgentTabContent activeTab={activeTab} onOpenPhotos={onOpenPhotos} />
+          <AgentTabContent
+            activeTab={activeTab}
+            onOpenPhotos={onOpenPhotos}
+            onOpenWrapped={onOpenWrapped}
+          />
         </div>
       </div>
 

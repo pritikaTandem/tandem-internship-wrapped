@@ -2,27 +2,46 @@
 
 import { Dock } from "@/components/desktop/Dock";
 import { PhotosWindow } from "@/components/desktop/PhotosWindow";
+import { WrappedWindow } from "@/components/desktop/WrappedWindow";
 import { WezTerm } from "@/components/terminal/WezTerm";
 import { useState } from "react";
 
-type FrontWindow = "terminal" | "photos";
+type WindowName = "terminal" | "photos" | "wrapped";
 
 export function DesktopShell() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isTerminalCollapsed, setIsTerminalCollapsed] = useState(false);
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
-  const [frontWindow, setFrontWindow] = useState<FrontWindow>("terminal");
+  const [isWrappedOpen, setIsWrappedOpen] = useState(false);
+  const [zIndices, setZIndices] = useState<Record<WindowName, number>>({
+    terminal: 30,
+    photos: 20,
+    wrapped: 10,
+  });
+
+  const bringToFront = (name: WindowName) => {
+    setZIndices((current) => {
+      const maxZ = Math.max(...Object.values(current));
+      if (current[name] === maxZ) return current;
+      return { ...current, [name]: maxZ + 1 };
+    });
+  };
 
   const toggleTerminal = () => {
     setIsTerminalOpen((open) => !open);
     // Reopening from the dock should always show the full window.
     setIsTerminalCollapsed(false);
-    setFrontWindow("terminal");
+    bringToFront("terminal");
   };
 
   const openPhotos = () => {
     setIsPhotosOpen(true);
-    setFrontWindow("photos");
+    bringToFront("photos");
+  };
+
+  const openWrapped = () => {
+    setIsWrappedOpen(true);
+    bringToFront("wrapped");
   };
 
   return (
@@ -33,14 +52,21 @@ export function DesktopShell() {
         onClose={() => setIsTerminalOpen(false)}
         onToggleCollapse={() => setIsTerminalCollapsed((current) => !current)}
         onOpenPhotos={openPhotos}
-        zIndex={frontWindow === "terminal" ? 50 : 40}
-        onFocus={() => setFrontWindow("terminal")}
+        onOpenWrapped={openWrapped}
+        zIndex={zIndices.terminal}
+        onFocus={() => bringToFront("terminal")}
       />
       <PhotosWindow
         isOpen={isPhotosOpen}
         onClose={() => setIsPhotosOpen(false)}
-        zIndex={frontWindow === "photos" ? 50 : 40}
-        onFocus={() => setFrontWindow("photos")}
+        zIndex={zIndices.photos}
+        onFocus={() => bringToFront("photos")}
+      />
+      <WrappedWindow
+        isOpen={isWrappedOpen}
+        onClose={() => setIsWrappedOpen(false)}
+        zIndex={zIndices.wrapped}
+        onFocus={() => bringToFront("wrapped")}
       />
       <Dock isTerminalOpen={isTerminalOpen} onToggleTerminal={toggleTerminal} />
     </>

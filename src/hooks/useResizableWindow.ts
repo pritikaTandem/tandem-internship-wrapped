@@ -1,6 +1,6 @@
 "use client";
 
-import type { MotionValue } from "framer-motion";
+import { useMotionValue, type MotionValue } from "framer-motion";
 import {
   useCallback,
   useLayoutEffect,
@@ -40,6 +40,30 @@ type ResizeSession = Size & {
 const MIN_WIDTH = 320;
 const MIN_HEIGHT = 220;
 
+/** How much of the window must stay reachable so its header never disappears off-screen. */
+const MIN_VISIBLE_X = 80;
+const MIN_VISIBLE_Y = 40;
+
+/**
+ * Creates the x/y motion values for a draggable window, pre-centered at
+ * creation time — synchronously, from `defaultWidth`, not via an effect that
+ * waits for the element to exist in the DOM. Windows here mount conditionally
+ * (`{isOpen && <motion.section>}`), so on a window that starts closed,
+ * `isOpen` is still false on the very first render and any ref-dependent
+ * effect has nothing to attach to yet; relying on that effect to fire again
+ * later has proven unreliable, so centering doesn't depend on it at all.
+ */
+export function useCenteredMotionValues(defaultWidth: number) {
+  const initialX =
+    typeof window === "undefined"
+      ? 0
+      : Math.max(16, (window.innerWidth - Math.min(defaultWidth, window.innerWidth - 32)) / 2);
+  const initialY = typeof window === "undefined" ? 0 : Math.max(56, window.innerHeight * 0.16);
+  const x = useMotionValue(initialX);
+  const y = useMotionValue(initialY);
+  return { x, y };
+}
+
 /**
  * Drag-to-resize from any edge or corner. Size stays `null` until the first
  * resize so CSS owns the default dimensions; west/north edges also shift the
@@ -49,22 +73,51 @@ export function useResizableWindow({
   x,
   y,
   windowRef,
+  centerOnMountWidth,
 }: {
   x: MotionValue<number>;
   y: MotionValue<number>;
   windowRef: RefObject<HTMLElement | null>;
+  /**
+   * Only pass this for windows that are ALWAYS mounted (not gated behind
+   * `{isOpen && <motion.section>}`) — e.g. the terminal, which stays mounted
+   * for tab-content persistence and just toggles opacity. For those, the ref
+   * is guaranteed to exist right after mount, so a one-time effect safely
+   * centers `x`/`y` post-hydration (avoiding the SSR/client mismatch that
+   * `useCenteredMotionValues`'s synchronous `window`-read would cause on an
+   * always-rendered element). Conditionally-mounted windows should leave this
+   * unset and use `useCenteredMotionValues` instead — for them, the element
+   * doesn't exist yet on mount, and this effect has no dependency that would
+   * make it try again later.
+   */
+  centerOnMountWidth?: number;
 }) {
   const [size, setSize] = useState<Size | null>(null);
   const session = useRef<ResizeSession | null>(null);
+  const hasCenteredOnMount = useRef(false);
 
-  // Center the window on first paint, before the user sees it at the origin.
   useLayoutEffect(() => {
+    if (centerOnMountWidth === undefined || hasCenteredOnMount.current) return;
     const element = windowRef.current;
     if (!element) return;
 
-    const { width } = element.getBoundingClientRect();
+    hasCenteredOnMount.current = true;
+    const width = Math.min(centerOnMountWidth, window.innerWidth - 32);
     x.set(Math.max(16, (window.innerWidth - width) / 2));
     y.set(Math.max(56, window.innerHeight * 0.16));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keeps the window (specifically its header, the only drag handle) from
+  // ever being dragged or resized fully off-screen — with nothing grabbable
+  // left in view, there'd be no way to bring it back.
+  const clampToViewport = useCallback(() => {
+    const width = windowRef.current?.getBoundingClientRect().width ?? MIN_WIDTH;
+    const maxX = window.innerWidth - MIN_VISIBLE_X;
+    const minX = MIN_VISIBLE_X - width;
+    const maxY = window.innerHeight - MIN_VISIBLE_Y;
+    x.set(Math.min(Math.max(x.get(), minX), maxX));
+    y.set(Math.min(Math.max(y.get(), 0), maxY));
   }, [windowRef, x, y]);
 
   const startResize = useCallback(
@@ -116,13 +169,14 @@ export function useResizableWindow({
         session.current = null;
         window.removeEventListener("pointermove", onPointerMove);
         window.removeEventListener("pointerup", onPointerUp);
+        clampToViewport();
       };
 
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", onPointerUp);
     },
-    [windowRef, x, y],
+    [windowRef, x, y, clampToViewport],
   );
 
-  return { size, startResize };
+  return { size, startResize, clampToViewport };
 }

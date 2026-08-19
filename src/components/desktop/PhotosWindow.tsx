@@ -1,14 +1,12 @@
 "use client";
 
 import { PHOTOS, PHOTOS_HASHTAG } from "@/data/photos";
-import { RESIZE_HANDLES, useResizableWindow } from "@/hooks/useResizableWindow";
 import {
-  AnimatePresence,
-  motion,
-  useDragControls,
-  useMotionValue,
-  type PanInfo,
-} from "framer-motion";
+  RESIZE_HANDLES,
+  useCenteredMotionValues,
+  useResizableWindow,
+} from "@/hooks/useResizableWindow";
+import { AnimatePresence, motion, useDragControls, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
@@ -34,9 +32,8 @@ export function PhotosWindow({
   const [index, setIndex] = useState(0);
   const windowRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const { size, startResize } = useResizableWindow({ x, y, windowRef });
+  const { x, y } = useCenteredMotionValues(480);
+  const { size, startResize, clampToViewport } = useResizableWindow({ x, y, windowRef });
 
   const canGoPrev = index > 0;
   const canGoNext = index < PHOTOS.length - 1;
@@ -74,6 +71,7 @@ export function PhotosWindow({
           dragListener={false}
           dragMomentum={false}
           dragElastic={0}
+          onDragEnd={clampToViewport}
           onPointerDownCapture={onFocus}
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
