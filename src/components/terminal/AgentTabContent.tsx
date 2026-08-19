@@ -13,10 +13,12 @@ export function AgentTabContent({
   activeTab,
   onOpenPhotos,
   onOpenWrapped,
+  onOpenNotebook,
 }: {
   activeTab: AgentTab;
   onOpenPhotos: () => void;
   onOpenWrapped: () => void;
+  onOpenNotebook: () => void;
 }) {
   return (
     <>
@@ -24,7 +26,10 @@ export function AgentTabContent({
         <WorkAgent active={activeTab === "work_agent"} onOpenWrapped={onOpenWrapped} />
       </div>
       <div className={activeTab === "reality_check_agent" ? "h-full" : "hidden"}>
-        <RealityCheckAgent active={activeTab === "reality_check_agent"} />
+        <RealityCheckAgent
+          active={activeTab === "reality_check_agent"}
+          onOpenNotebook={onOpenNotebook}
+        />
       </div>
       <div className={activeTab === "touch_grass_agent" ? "h-full" : "hidden"}>
         <TouchGrassAgent

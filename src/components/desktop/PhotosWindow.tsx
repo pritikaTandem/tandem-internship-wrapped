@@ -32,7 +32,7 @@ export function PhotosWindow({
   const [index, setIndex] = useState(0);
   const windowRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
-  const { x, y } = useCenteredMotionValues(480);
+  const { x, y } = useCenteredMotionValues(640);
   const { size, startResize, clampToViewport } = useResizableWindow({ x, y, windowRef });
 
   const canGoPrev = index > 0;
@@ -79,7 +79,7 @@ export function PhotosWindow({
           transition={{ duration: 0.18, ease: "easeOut" }}
           style={{ x, y, width: size?.width, height: size?.height, zIndex }}
           className={`fixed left-0 top-0 flex flex-col border-2 border-mint bg-plum/95 shadow-pixel-lg backdrop-blur-md ${
-            size ? "" : "w-[min(480px,calc(100vw-2rem))]"
+            size ? "" : "w-[min(640px,calc(100vw-2rem))]"
           }`}
         >
           <header
@@ -111,14 +111,14 @@ export function PhotosWindow({
                     <div
                       aria-hidden="true"
                       onClick={goPrev}
-                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(140px,42cqw,340px)] translate-x-[calc(-50%-14px)] translate-y-[calc(-50%+6px)] rotate-[-6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
+                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(140px,46cqw,480px)] translate-x-[calc(-50%-14px)] translate-y-[calc(-50%+6px)] rotate-[-6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
                     />
                   )}
                   {canGoNext && (
                     <div
                       aria-hidden="true"
                       onClick={goNext}
-                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(140px,42cqw,340px)] translate-x-[calc(-50%+14px)] translate-y-[calc(-50%+6px)] rotate-[6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
+                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(140px,46cqw,480px)] translate-x-[calc(-50%+14px)] translate-y-[calc(-50%+6px)] rotate-[6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
                     />
                   )}
 
@@ -134,8 +134,8 @@ export function PhotosWindow({
                       filter: "brightness(1) contrast(1)",
                       rotate: tiltFor(index),
                     }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="relative z-10 flex w-[clamp(140px,42cqw,340px)] cursor-grab flex-col items-center border-2 border-cream bg-cream p-[3cqw] pb-[5cqw] shadow-pixel-lg active:cursor-grabbing"
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="relative z-10 flex w-[clamp(140px,46cqw,480px)] cursor-grab flex-col items-center border-2 border-cream bg-cream p-[3cqw] pb-[5cqw] shadow-pixel-lg active:cursor-grabbing"
                   >
                     <div className="relative aspect-square w-full select-none border border-plum/20">
                       <Image
@@ -143,11 +143,11 @@ export function PhotosWindow({
                         alt={photo.caption}
                         fill
                         draggable={false}
-                        sizes="340px"
+                        sizes="480px"
                         className="object-cover"
                       />
                     </div>
-                    <p className="mt-2 truncate font-handwritten text-[clamp(1rem,5cqw,1.75rem)] text-plum">
+                    <p className="mt-2 truncate font-handwritten text-[clamp(1rem,5cqw,2rem)] text-plum">
                       {photo.caption}
                     </p>
                   </motion.div>

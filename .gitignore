@@ -36,6 +36,10 @@ yarn-error.log*
 # work_agent knowledge base (personal notes, not for the repo)
 /src/data/knowledge_base.ts
 
+# touch_grass_agent photos (not for the repo)
+/src/data/photos.ts
+/public/photos/
+
 # vercel
 .vercel
 

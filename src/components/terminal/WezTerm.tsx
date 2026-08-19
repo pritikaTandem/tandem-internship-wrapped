@@ -19,6 +19,7 @@ export function WezTerm({
   onToggleCollapse,
   onOpenPhotos,
   onOpenWrapped,
+  onOpenNotebook,
   zIndex,
   onFocus,
 }: {
@@ -28,6 +29,7 @@ export function WezTerm({
   onToggleCollapse: () => void;
   onOpenPhotos: () => void;
   onOpenWrapped: () => void;
+  onOpenNotebook: () => void;
   zIndex: number;
   onFocus: () => void;
 }) {
@@ -155,6 +157,7 @@ export function WezTerm({
             activeTab={activeTab}
             onOpenPhotos={onOpenPhotos}
             onOpenWrapped={onOpenWrapped}
+            onOpenNotebook={onOpenNotebook}
           />
         </div>
       </div>
