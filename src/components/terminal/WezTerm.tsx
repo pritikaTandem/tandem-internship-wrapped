@@ -20,6 +20,8 @@ export function WezTerm({
   onOpenPhotos,
   onOpenWrapped,
   onOpenNotebook,
+  activeTab,
+  onTabChange,
   zIndex,
   onFocus,
 }: {
@@ -30,10 +32,11 @@ export function WezTerm({
   onOpenPhotos: () => void;
   onOpenWrapped: () => void;
   onOpenNotebook: () => void;
+  activeTab: AgentTab;
+  onTabChange: (tab: AgentTab) => void;
   zIndex: number;
   onFocus: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<AgentTab>("work_agent");
   const [isMaximized, setIsMaximized] = useState(false);
 
   const windowRef = useRef<HTMLElement | null>(null);
@@ -135,7 +138,7 @@ export function WezTerm({
               aria-selected={activeTab === tab.id}
               aria-controls={`panel-${tab.id}`}
               onPointerDown={(event) => event.stopPropagation()}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => onTabChange(tab.id)}
               className={`flex-1 border-r border-pink/25 px-2 py-2 font-mono text-[10px] transition-colors last:border-r-0 sm:text-[11px] ${
                 activeTab === tab.id
                   ? "bg-pink/15 text-pink"

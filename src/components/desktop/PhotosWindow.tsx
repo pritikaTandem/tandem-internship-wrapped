@@ -13,6 +13,12 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 
 const SWIPE_THRESHOLD = 80;
 
+const SECTION_LABEL_COLORS: Record<string, string> = {
+  "food!": "text-pink",
+  "experiences!": "text-mint",
+  "yc!": "text-purple",
+};
+
 /** Deterministic per-photo tilt so the stack reads as tossed, not aligned. */
 function tiltFor(index: number): number {
   return ((index * 37) % 11) - 5;
@@ -32,7 +38,7 @@ export function PhotosWindow({
   const [index, setIndex] = useState(0);
   const windowRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
-  const { x, y } = useCenteredMotionValues(640);
+  const { x, y } = useCenteredMotionValues(480);
   const { size, startResize, clampToViewport } = useResizableWindow({ x, y, windowRef });
 
   const canGoPrev = index > 0;
@@ -79,8 +85,8 @@ export function PhotosWindow({
           transition={{ duration: 0.18, ease: "easeOut" }}
           style={{ x, y, width: size?.width, height: size?.height, zIndex }}
           className={`fixed left-0 top-0 flex flex-col border-2 border-mint bg-plum/95 shadow-pixel-lg backdrop-blur-md ${
-            size ? "" : "w-[min(640px,calc(100vw-2rem))]"
-          }`}
+            size ? "" : "w-[min(480px,calc(100vw-2rem))]"
+          } ${size ? "" : "h-[min(720px,calc(100vh-140px))]"}`}
         >
           <header
             onPointerDown={startDrag}
@@ -106,19 +112,38 @@ export function PhotosWindow({
               </p>
             ) : (
               <>
+                <div className="flex min-h-[2.75rem] items-center justify-center">
+                  <AnimatePresence mode="wait">
+                    {photo.sectionLabel && (
+                      <motion.p
+                        key={photo.sectionLabel}
+                        initial={{ opacity: 0, y: -6, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -6, scale: 0.9 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className={`font-handwritten text-[clamp(2rem,10cqw,4rem)] font-bold ${
+                          SECTION_LABEL_COLORS[photo.sectionLabel] ?? "text-cream"
+                        }`}
+                      >
+                        {photo.sectionLabel}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <div className="relative flex w-full items-center justify-center overflow-hidden py-4">
                   {canGoPrev && (
                     <div
                       aria-hidden="true"
                       onClick={goPrev}
-                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(140px,46cqw,480px)] translate-x-[calc(-50%-14px)] translate-y-[calc(-50%+6px)] rotate-[-6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
+                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(200px,70cqw,560px)] translate-x-[calc(-50%-5cqw)] translate-y-[calc(-50%+2cqw)] rotate-[-6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
                     />
                   )}
                   {canGoNext && (
                     <div
                       aria-hidden="true"
                       onClick={goNext}
-                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(140px,46cqw,480px)] translate-x-[calc(-50%+14px)] translate-y-[calc(-50%+6px)] rotate-[6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
+                      className="absolute left-1/2 top-1/2 z-0 aspect-[4/5] w-[clamp(200px,70cqw,560px)] translate-x-[calc(-50%+5cqw)] translate-y-[calc(-50%+2cqw)] rotate-[6deg] scale-[0.94] cursor-pointer border-2 border-cream/80 bg-cream/90 shadow-pixel"
                     />
                   )}
 
@@ -135,19 +160,19 @@ export function PhotosWindow({
                       rotate: tiltFor(index),
                     }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="relative z-10 flex w-[clamp(140px,46cqw,480px)] cursor-grab flex-col items-center border-2 border-cream bg-cream p-[3cqw] pb-[5cqw] shadow-pixel-lg active:cursor-grabbing"
+                    className="relative z-10 flex w-[clamp(200px,70cqw,560px)] cursor-grab flex-col items-center border-2 border-cream bg-cream p-[3cqw] pb-[5cqw] shadow-pixel-lg active:cursor-grabbing"
                   >
-                    <div className="relative aspect-square w-full select-none border border-plum/20">
+                    <div className="relative aspect-[4/5] w-full select-none border border-plum/20">
                       <Image
                         src={photo.src}
                         alt={photo.caption}
                         fill
                         draggable={false}
-                        sizes="480px"
+                        sizes="560px"
                         className="object-cover"
                       />
                     </div>
-                    <p className="mt-2 truncate font-handwritten text-[clamp(1rem,5cqw,2rem)] text-plum">
+                    <p className="mt-2 truncate font-handwritten text-[clamp(1.25rem,6cqw,2.25rem)] text-plum">
                       {photo.caption}
                     </p>
                   </motion.div>
@@ -161,7 +186,7 @@ export function PhotosWindow({
                     onClick={goPrev}
                     className="text-cream/60 transition-colors hover:text-mint disabled:opacity-20"
                   >
-                    <ChevronLeft className="size-[clamp(1rem,3cqw,1.5rem)]" />
+                    <ChevronLeft className="size-[clamp(1.125rem,3.5cqw,1.75rem)]" />
                   </button>
 
                   <div className="flex items-center gap-1.5">
@@ -185,11 +210,11 @@ export function PhotosWindow({
                     onClick={goNext}
                     className="text-cream/60 transition-colors hover:text-mint disabled:opacity-20"
                   >
-                    <ChevronRight className="size-[clamp(1rem,3cqw,1.5rem)]" />
+                    <ChevronRight className="size-[clamp(1.125rem,3.5cqw,1.75rem)]" />
                   </button>
                 </div>
 
-                <p className="font-mono text-[clamp(10px,2.5cqw,14px)] text-pink/80">{PHOTOS_HASHTAG}</p>
+                <p className="font-mono text-[clamp(11px,3cqw,16px)] text-pink/80">{PHOTOS_HASHTAG}</p>
               </>
             )}
           </div>

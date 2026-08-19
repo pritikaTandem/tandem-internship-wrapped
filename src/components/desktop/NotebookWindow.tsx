@@ -64,11 +64,14 @@ function PageContent({ pair, pageNumber }: { pair: RealityPair; pageNumber: numb
 export function NotebookWindow({
   isOpen,
   onClose,
+  onFinished,
   zIndex,
   onFocus,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  /** Fires when advancing past the last page, so the presenter can hand off hands-free. */
+  onFinished: () => void;
   zIndex: number;
   onFocus: () => void;
 }) {
@@ -91,7 +94,13 @@ export function NotebookWindow({
     setIndex(newIndex);
   };
   const goPrev = () => canGoPrev && goTo(index - 1);
-  const goNext = () => canGoNext && goTo(index + 1);
+  const goNext = () => {
+    if (canGoNext) {
+      goTo(index + 1);
+    } else if (pageCount > 0 && index === pageCount - 1) {
+      onFinished();
+    }
+  };
 
   const startDrag = (event: PointerEvent<HTMLElement>) => dragControls.start(event);
 

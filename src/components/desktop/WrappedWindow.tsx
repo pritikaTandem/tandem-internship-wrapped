@@ -35,11 +35,14 @@ const SLIDE_VARIANTS = {
 export function WrappedWindow({
   isOpen,
   onClose,
+  onFinished,
   zIndex,
   onFocus,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  /** Fires when advancing past the closing card, so the presenter can hand off hands-free. */
+  onFinished: () => void;
   zIndex: number;
   onFocus: () => void;
 }) {
@@ -59,9 +62,12 @@ export function WrappedWindow({
     setIndex((current) => current - 1);
   };
   const goNext = () => {
-    if (!canGoNext) return;
-    setDirection(1);
-    setIndex((current) => current + 1);
+    if (canGoNext) {
+      setDirection(1);
+      setIndex((current) => current + 1);
+    } else if (index === cards.length - 1) {
+      onFinished();
+    }
   };
 
   const startDrag = (event: PointerEvent<HTMLElement>) => dragControls.start(event);

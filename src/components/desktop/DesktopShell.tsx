@@ -5,6 +5,7 @@ import { NotebookWindow } from "@/components/desktop/NotebookWindow";
 import { PhotosWindow } from "@/components/desktop/PhotosWindow";
 import { WrappedWindow } from "@/components/desktop/WrappedWindow";
 import { WezTerm } from "@/components/terminal/WezTerm";
+import { type AgentTab } from "@/constants/terminal";
 import { useState } from "react";
 
 type WindowName = "terminal" | "photos" | "wrapped" | "notebook";
@@ -12,6 +13,7 @@ type WindowName = "terminal" | "photos" | "wrapped" | "notebook";
 export function DesktopShell() {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isTerminalCollapsed, setIsTerminalCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<AgentTab>("work_agent");
   const [isPhotosOpen, setIsPhotosOpen] = useState(false);
   const [isWrappedOpen, setIsWrappedOpen] = useState(false);
   const [isNotebookOpen, setIsNotebookOpen] = useState(false);
@@ -52,6 +54,24 @@ export function DesktopShell() {
     bringToFront("notebook");
   };
 
+  // Pressing the right arrow key past Wrapped's closing card hands off to
+  // the next agent tab, the same way advancing past Notebook's last page does.
+  const finishWrapped = () => {
+    setIsWrappedOpen(false);
+    setActiveTab("reality_check_agent");
+    setIsTerminalCollapsed(false);
+    bringToFront("terminal");
+  };
+
+  // Pressing the right arrow key past the Notebook's last page hands off to
+  // the next agent tab, the same way advancing past Wrapped's last card does.
+  const finishNotebook = () => {
+    setIsNotebookOpen(false);
+    setActiveTab("touch_grass_agent");
+    setIsTerminalCollapsed(false);
+    bringToFront("terminal");
+  };
+
   return (
     <>
       <WezTerm
@@ -62,6 +82,8 @@ export function DesktopShell() {
         onOpenPhotos={openPhotos}
         onOpenWrapped={openWrapped}
         onOpenNotebook={openNotebook}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
         zIndex={zIndices.terminal}
         onFocus={() => bringToFront("terminal")}
       />
@@ -74,12 +96,14 @@ export function DesktopShell() {
       <WrappedWindow
         isOpen={isWrappedOpen}
         onClose={() => setIsWrappedOpen(false)}
+        onFinished={finishWrapped}
         zIndex={zIndices.wrapped}
         onFocus={() => bringToFront("wrapped")}
       />
       <NotebookWindow
         isOpen={isNotebookOpen}
         onClose={() => setIsNotebookOpen(false)}
+        onFinished={finishNotebook}
         zIndex={zIndices.notebook}
         onFocus={() => bringToFront("notebook")}
       />
