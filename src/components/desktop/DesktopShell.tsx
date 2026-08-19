@@ -5,7 +5,7 @@ import { WezTerm } from "@/components/terminal/WezTerm";
 import { useState } from "react";
 
 export function DesktopShell() {
-  const [isTerminalOpen, setIsTerminalOpen] = useState(true);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isTerminalCollapsed, setIsTerminalCollapsed] = useState(false);
 
   const toggleTerminal = () => {
