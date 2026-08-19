@@ -1,42 +1,14 @@
 "use client";
 
+import { LearningsAgent } from "@/components/terminal/LearningsAgent";
 import { WorkAgent } from "@/components/terminal/WorkAgent";
-import {
-  LEARNINGS_DIFF,
-  TOUCH_GRASS_WARNINGS,
-  type AgentTab,
-  type DiffLine,
-} from "@/constants/terminal";
+import { TOUCH_GRASS_WARNINGS, type AgentTab } from "@/constants/terminal";
 
 function Command({ children }: { children: string }) {
   return (
     <p className="mb-3 text-cream/60">
       <span className="text-mint">$</span> {children}
     </p>
-  );
-}
-
-const DIFF_STYLES: Record<DiffLine["kind"], string> = {
-  meta: "text-cream/45",
-  hunk: "text-purple",
-  removed: "text-pink",
-  added: "text-mint",
-  context: "text-cream/60",
-};
-
-function LearningsAgent() {
-  return (
-    <div className="space-y-4">
-      <Command>git diff expectation..reality</Command>
-
-      <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono leading-6">
-        {LEARNINGS_DIFF.map((line) => (
-          <span key={line.text} className={`block ${DIFF_STYLES[line.kind]}`}>
-            {line.text}
-          </span>
-        ))}
-      </pre>
-    </div>
   );
 }
 
