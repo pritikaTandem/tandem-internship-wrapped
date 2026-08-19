@@ -27,11 +27,14 @@ function tiltFor(index: number): number {
 export function PhotosWindow({
   isOpen,
   onClose,
+  onFinished,
   zIndex,
   onFocus,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  /** Fires when advancing past the last photo, so the presenter can hand off hands-free. */
+  onFinished: () => void;
   zIndex: number;
   onFocus: () => void;
 }) {
@@ -44,7 +47,13 @@ export function PhotosWindow({
   const canGoPrev = index > 0;
   const canGoNext = index < PHOTOS.length - 1;
   const goPrev = () => canGoPrev && setIndex((current) => current - 1);
-  const goNext = () => canGoNext && setIndex((current) => current + 1);
+  const goNext = () => {
+    if (canGoNext) {
+      setIndex((current) => current + 1);
+    } else if (PHOTOS.length > 0 && index === PHOTOS.length - 1) {
+      onFinished();
+    }
+  };
 
   const startDrag = (event: PointerEvent<HTMLElement>) => dragControls.start(event);
 

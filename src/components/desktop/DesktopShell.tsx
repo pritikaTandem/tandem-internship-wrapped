@@ -10,7 +10,7 @@ import { useState } from "react";
 
 type WindowName = "terminal" | "photos" | "wrapped" | "notebook";
 
-export function DesktopShell() {
+export function DesktopShell({ onFinale }: { onFinale: () => void }) {
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [isTerminalCollapsed, setIsTerminalCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<AgentTab>("work_agent");
@@ -72,6 +72,13 @@ export function DesktopShell() {
     bringToFront("terminal");
   };
 
+  // Photos is the last agent tab — advancing past the last photo closes it
+  // and hands off to the desktop-level finale instead of another tab.
+  const finishPhotos = () => {
+    setIsPhotosOpen(false);
+    onFinale();
+  };
+
   return (
     <>
       <WezTerm
@@ -90,6 +97,7 @@ export function DesktopShell() {
       <PhotosWindow
         isOpen={isPhotosOpen}
         onClose={() => setIsPhotosOpen(false)}
+        onFinished={finishPhotos}
         zIndex={zIndices.photos}
         onFocus={() => bringToFront("photos")}
       />

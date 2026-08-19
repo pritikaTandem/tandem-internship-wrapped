@@ -40,6 +40,10 @@ yarn-error.log*
 /src/data/photos.ts
 /public/photos/
 
+# lock screen team photo (not for the repo)
+/src/data/team-photo.ts
+/public/team-photo.jpg
+
 # vercel
 .vercel
 
