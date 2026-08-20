@@ -5,24 +5,20 @@ import {
   useCenteredMotionValues,
   useResizableWindow,
 } from "@/hooks/useResizableWindow";
-import { getWorkProjects, type WorkProject } from "@/lib/work-projects";
+import { getRealityPairs, type RealityPair } from "@/lib/reality-pairs";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 
 type Card =
   | { kind: "title" }
-  | { kind: "project"; project: WorkProject; level: number; total: number }
-  | { kind: "closing" };
+  | { kind: "pair"; pair: RealityPair; level: number; total: number };
 
 const CARD_COLORS = ["bg-pink", "bg-mint", "bg-purple"];
 
-function buildCards(projects: WorkProject[]): Card[] {
+function buildCards(pairs: RealityPair[]): Card[] {
   return [
     { kind: "title" },
-    ...projects.map(
-      (project, i): Card => ({ kind: "project", project, level: i + 1, total: projects.length }),
-    ),
-    { kind: "closing" },
+    ...pairs.map((pair, i): Card => ({ kind: "pair", pair, level: i + 1, total: pairs.length })),
   ];
 }
 
@@ -31,6 +27,39 @@ const SLIDE_VARIANTS = {
   center: { x: 0, opacity: 1 },
   exit: (direction: number) => ({ x: direction >= 0 ? -40 : 40, opacity: 0 }),
 };
+
+const REALITY_DELAY_MS = 2000;
+
+type RevealStage = "expectation" | "scratched" | "revealed";
+
+/** A messy, hand-drawn-looking strikethrough that draws itself across the text once triggered. */
+function ScratchedText({ text, active }: { text: string; active: boolean }) {
+  return (
+    <span className="relative inline-block">
+      {text}
+      {active && (
+        <>
+          <motion.span
+            aria-hidden="true"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            style={{ transformOrigin: "left center" }}
+            className="pointer-events-none absolute left-[-6%] top-[54%] h-[3px] w-[112%] -rotate-6 rounded-full bg-plum/70"
+          />
+          <motion.span
+            aria-hidden="true"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.3, delay: 0.08, ease: "easeOut" }}
+            style={{ transformOrigin: "left center" }}
+            className="pointer-events-none absolute left-[-4%] top-[46%] h-[2px] w-[108%] rotate-3 rounded-full bg-plum/50"
+          />
+        </>
+      )}
+    </span>
+  );
+}
 
 export function WrappedWindow({
   isOpen,
@@ -46,31 +75,46 @@ export function WrappedWindow({
   zIndex: number;
   onFocus: () => void;
 }) {
-  const cards = useMemo(() => buildCards(getWorkProjects()), []);
+  const cards = useMemo(() => buildCards(getRealityPairs()), []);
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [revealStage, setRevealStage] = useState<RevealStage>("expectation");
   const windowRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
   const { x, y } = useCenteredMotionValues(380);
   const { size, startResize, clampToViewport } = useResizableWindow({ x, y, windowRef });
 
+  const card = cards[index];
   const canGoPrev = index > 0;
   const canGoNext = index < cards.length - 1;
   const goPrev = () => {
     if (!canGoPrev) return;
     setDirection(-1);
     setIndex((current) => current - 1);
+    setRevealStage("expectation");
   };
   const goNext = () => {
+    if (card.kind === "pair" && revealStage !== "revealed") {
+      if (revealStage === "expectation") setRevealStage("scratched");
+      return;
+    }
     if (canGoNext) {
       setDirection(1);
       setIndex((current) => current + 1);
+      setRevealStage("expectation");
     } else if (index === cards.length - 1) {
       onFinished();
     }
   };
 
   const startDrag = (event: PointerEvent<HTMLElement>) => dragControls.start(event);
+
+  // The scratch fires immediately on the right-arrow press; reality follows a couple seconds later on its own.
+  useEffect(() => {
+    if (revealStage !== "scratched") return;
+    const timeout = window.setTimeout(() => setRevealStage("revealed"), REALITY_DELAY_MS);
+    return () => window.clearTimeout(timeout);
+  }, [revealStage]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -81,9 +125,8 @@ export function WrappedWindow({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, index]);
+  }, [isOpen, index, revealStage]);
 
-  const card = cards[index];
   const cardColor = CARD_COLORS[index % CARD_COLORS.length];
 
   return (
@@ -135,40 +178,51 @@ export function WrappedWindow({
                 exit="exit"
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 className={`absolute inset-2 flex flex-col items-center justify-center gap-3 rounded-2xl p-8 text-center ${
-                  card.kind === "project" ? cardColor : "bg-plum"
+                  card.kind === "pair" ? cardColor : "bg-plum"
                 }`}
               >
                 {card.kind === "title" && (
                   <>
                     <p className="font-wrapped text-4xl font-extrabold leading-none text-cream">
-                      TANDEM
+                      MY
                       <br />
-                      SUMMER
+                      <span className="text-pink">LEARNINGS</span>
                     </p>
-                    <p className="font-wrapped text-xl font-extrabold text-pink">PROJECTS</p>
                     <p className="animate-pulse font-mono text-[10px] uppercase tracking-wide text-cream/50">
                       click to start
                     </p>
                   </>
                 )}
 
-                {card.kind === "project" && (
+                {card.kind === "pair" && (
                   <>
-                    <p className="font-wrapped text-5xl font-extrabold leading-none text-plum/70">
-                      #{String(card.level).padStart(2, "0")}
+                    <p className="font-pixel text-[11px] uppercase tracking-[0.2em] text-plum/70">
+                      expectation
                     </p>
-                    <p className="text-6xl">{card.project.icon}</p>
-                    <p className="font-wrapped text-2xl font-extrabold leading-tight text-plum">
-                      {card.project.name}
+                    <p className="font-handwritten text-2xl leading-snug text-plum/70">
+                      <ScratchedText
+                        text={card.pair.expectation}
+                        active={revealStage !== "expectation"}
+                      />
                     </p>
+
+                    {revealStage === "revealed" && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                      >
+                        <p className="mt-4 font-pixel text-[11px] uppercase tracking-[0.2em] text-plum/70">
+                          reality
+                        </p>
+                        <p className="font-handwritten text-4xl font-bold leading-tight text-plum">
+                          {card.pair.reality}
+                        </p>
+                      </motion.div>
+                    )}
                   </>
                 )}
 
-                {card.kind === "closing" && (
-                  <p className="font-wrapped text-3xl font-extrabold text-mint">
-                    ...and much more! 🌱
-                  </p>
-                )}
               </motion.div>
             </AnimatePresence>
 

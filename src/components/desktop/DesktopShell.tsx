@@ -54,20 +54,22 @@ export function DesktopShell({ onFinale }: { onFinale: () => void }) {
     bringToFront("notebook");
   };
 
-  // Pressing the right arrow key past Wrapped's closing card hands off to
-  // the next agent tab, the same way advancing past Notebook's last page does.
+  // Pressing the right arrow key past Wrapped's closing card (reality_check_agent's
+  // reveal) hands off to the next agent tab, the same way advancing past
+  // Notebook's last page does.
   const finishWrapped = () => {
     setIsWrappedOpen(false);
-    setActiveTab("reality_check_agent");
+    setActiveTab("touch_grass_agent");
     setIsTerminalCollapsed(false);
     bringToFront("terminal");
   };
 
-  // Pressing the right arrow key past the Notebook's last page hands off to
-  // the next agent tab, the same way advancing past Wrapped's last card does.
+  // Pressing the right arrow key past the Notebook's last page (work_agent's
+  // reveal) hands off to the next agent tab, the same way advancing past
+  // Wrapped's last card does.
   const finishNotebook = () => {
     setIsNotebookOpen(false);
-    setActiveTab("touch_grass_agent");
+    setActiveTab("reality_check_agent");
     setIsTerminalCollapsed(false);
     bringToFront("terminal");
   };

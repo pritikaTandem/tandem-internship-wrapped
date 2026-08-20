@@ -1,57 +1,136 @@
 "use client";
 
 import { RESIZE_HANDLES, useCenteredMotionValues, useResizableWindow } from "@/hooks/useResizableWindow";
-import { getRealityPairs, type RealityPair } from "@/lib/reality-pairs";
+import { WORK_PHOTOS } from "@/data/work-photos";
+import { getWorkProjects, type WorkProject } from "@/lib/work-projects";
 import { AnimatePresence, motion, useDragControls } from "framer-motion";
+import { ImageIcon } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 
-/** A messy, hand-drawn-looking strikethrough — a few overlapping angled marks, not a clean CSS line. */
-function ScratchedText({ text }: { text: string }) {
+type Page =
+  | { kind: "title" }
+  | { kind: "project"; project: WorkProject }
+  | { kind: "closing" };
+
+const SPIRAL_RING_COUNT = 16;
+/** Super-light off-white paper — noticeably lighter than the app's usual warm cream accent. */
+const PAPER = "bg-[#fdfcf9]";
+
+function buildPages(projects: WorkProject[]): Page[] {
+  return [
+    { kind: "title" },
+    ...projects.map((project): Page => ({ kind: "project", project })),
+    { kind: "closing" },
+  ];
+}
+
+/** Strips the "(in progress)" suffix and lowercases, matching WORK_PHOTOS' keys. */
+function photoKeyFor(name: string): string {
+  return name.replace(/\s*\(in progress\)\s*$/i, "").trim().toLowerCase();
+}
+
+function photosFor(page: Page): string[] {
+  if (page.kind !== "project") return [];
+  return WORK_PHOTOS[photoKeyFor(page.project.name)] ?? [];
+}
+
+/** A row of metal spiral-coil rings — a hole punched through each, not a filled dot. */
+function SpiralBinding() {
   return (
-    <span className="relative inline-block">
-      {text}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[-4%] top-[54%] h-[3px] w-[108%] -rotate-2 rounded-full bg-plum/70"
-      />
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[-2%] top-[46%] h-[2px] w-[104%] rotate-1 rounded-full bg-plum/50"
-      />
-    </span>
+    <div className="pointer-events-none absolute inset-x-6 -top-3 z-40 flex justify-between">
+      {Array.from({ length: SPIRAL_RING_COUNT }, (_, i) => (
+        <div key={i} className="relative size-4">
+          <div className="absolute inset-0 rounded-full bg-neutral-400 shadow-[1px_1px_2px_rgba(26,22,37,0.4)]" />
+          <div className={`absolute inset-[3px] rounded-full ${PAPER}`} />
+        </div>
+      ))}
+    </div>
   );
 }
 
-/** A marker-style highlight swiped behind the text, like it was dragged across with a pink highlighter. */
-function HighlightedText({ text }: { text: string }) {
+/** Scattered, overlapping placement — each photo stays big regardless of count instead of splitting a row. */
+const PHOTO_LAYOUTS = [
+  { x: -30, y: -6, rotate: -4, size: 66 },
+  { x: 34, y: 9, rotate: 5, size: 60 },
+  { x: -6, y: 16, rotate: -3, size: 52 },
+  { x: 24, y: -20, rotate: 3, size: 44 },
+];
+
+function PhotoStack({ photos }: { photos: string[] }) {
+  if (photos.length === 0) {
+    return (
+      <div
+        className={`flex aspect-video w-[82%] max-w-[600px] flex-col items-center justify-center gap-2 border-4 border-cream/80 ${PAPER} text-plum/30 shadow-pixel`}
+      >
+        <ImageIcon className="size-10" />
+        <p className="font-mono text-[10px] uppercase tracking-wide">photo coming soon</p>
+      </div>
+    );
+  }
+
+  const layouts =
+    photos.length === 1 ? [{ x: 0, y: 0, rotate: -3, size: 82 }] : PHOTO_LAYOUTS;
+
   return (
-    <span className="relative inline-block">
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-[-4%] top-[16%] bottom-[8%] -rotate-1 rounded-sm bg-pink/45"
-      />
-      <span className="relative">{text}</span>
-    </span>
+    <div className="relative h-full w-full">
+      {photos.map((src, i) => {
+        const layout = layouts[i % layouts.length];
+        return (
+          <div
+            key={src}
+            className={`absolute left-1/2 top-1/2 aspect-video border-4 border-cream/80 ${PAPER} shadow-pixel-lg`}
+            style={{
+              width: `${layout.size}%`,
+              maxWidth: 560,
+              zIndex: i + 1,
+              transform: `translate(-50%, -50%) translate(${layout.x}%, ${layout.y}%) rotate(${layout.rotate}deg)`,
+            }}
+          >
+            <Image src={src} alt="" fill className="object-contain" />
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
-function PageContent({ pair, pageNumber }: { pair: RealityPair; pageNumber: number }) {
-  return (
-    <div className="relative flex h-full flex-col justify-center gap-6 p-6 sm:p-8">
-      <div>
-        <p className="font-pixel text-[8px] uppercase tracking-[0.2em] text-plum/40">
-          expectation
+function PageContent({ page, pageNumber }: { page: Page; pageNumber: number }) {
+  if (page.kind === "title") {
+    return (
+      <div className="relative flex h-full flex-col items-center justify-center gap-3 p-6 text-center sm:p-8">
+        <p className="font-handwritten text-[clamp(1.75rem,7cqw,3.25rem)] font-bold leading-snug text-plum">
+          some of my projects from the summer
         </p>
-        <p className="mt-2 font-handwritten text-[clamp(1.1rem,4.2cqw,1.9rem)] leading-snug text-plum/60">
-          <ScratchedText text={pair.expectation} />
+        <p className="absolute inset-x-0 bottom-3 text-center font-pixel text-[8px] text-plum/40">
+          {pageNumber}
         </p>
       </div>
+    );
+  }
 
-      <div>
-        <p className="font-pixel text-[8px] uppercase tracking-[0.2em] text-pink">reality</p>
-        <p className="mt-2 font-handwritten text-[clamp(1.6rem,6cqw,2.75rem)] font-bold leading-snug text-plum">
-          <HighlightedText text={pair.reality} />
+  if (page.kind === "closing") {
+    return (
+      <div className="relative flex h-full items-center justify-center gap-4 p-6 text-center sm:p-8">
+        <p className="font-handwritten text-[clamp(1.75rem,6cqw,3rem)] font-bold leading-tight text-plum">
+          ...and much more!
         </p>
+        <p className="text-5xl">🌱</p>
+        <p className="absolute inset-x-0 bottom-3 text-center font-pixel text-[8px] text-plum/40">
+          {pageNumber}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex h-full flex-col items-center gap-4 p-6 pt-8 text-center sm:p-8">
+      <p className="font-handwritten text-[clamp(1.5rem,5cqw,2.5rem)] font-bold leading-tight text-plum">
+        {page.project.name}
+      </p>
+
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center">
+        <PhotoStack photos={photosFor(page)} />
       </div>
 
       <p className="absolute inset-x-0 bottom-3 text-center font-pixel text-[8px] text-plum/40">
@@ -75,17 +154,18 @@ export function NotebookWindow({
   zIndex: number;
   onFocus: () => void;
 }) {
-  const pairs = useMemo(() => getRealityPairs(), []);
+  const projects = useMemo(() => getWorkProjects(), []);
+  const pages = useMemo(() => buildPages(projects), [projects]);
   const [index, setIndex] = useState(0);
   // Index of the page currently mid-flip (its content still shows on the
-  // flipping overlay, on its way to resting over the left page) — null when idle.
+  // flipping overlay, tumbling away toward the top-left) — null when idle.
   const [flippingFrom, setFlippingFrom] = useState<number | null>(null);
   const windowRef = useRef<HTMLElement | null>(null);
   const dragControls = useDragControls();
-  const { x, y } = useCenteredMotionValues(640);
+  const { x, y } = useCenteredMotionValues(900);
   const { size, startResize, clampToViewport } = useResizableWindow({ x, y, windowRef });
 
-  const pageCount = pairs.length;
+  const pageCount = pages.length;
   const canGoPrev = index > 0;
   const canGoNext = index < pageCount - 1;
   const goTo = (newIndex: number) => {
@@ -97,7 +177,7 @@ export function NotebookWindow({
   const goNext = () => {
     if (canGoNext) {
       goTo(index + 1);
-    } else if (pageCount > 0 && index === pageCount - 1) {
+    } else if (projects.length > 0 && index === pageCount - 1) {
       onFinished();
     }
   };
@@ -115,7 +195,7 @@ export function NotebookWindow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, index, flippingFrom]);
 
-  const pair = pairs[index];
+  const page = pages[index];
 
   return (
     <AnimatePresence>
@@ -136,8 +216,8 @@ export function NotebookWindow({
           transition={{ duration: 0.18, ease: "easeOut" }}
           style={{ x, y, width: size?.width, height: size?.height, zIndex }}
           className={`fixed left-0 top-0 flex flex-col border-2 border-cream bg-plum shadow-pixel-lg ${
-            size ? "" : "w-[min(640px,calc(100vw-2rem))]"
-          } ${size ? "" : "h-[min(420px,calc(100vh-140px))]"}`}
+            size ? "" : "w-[min(900px,calc(100vw-2rem))]"
+          } ${size ? "" : "h-[min(620px,calc(100vh-140px))]"}`}
         >
           <header
             onPointerDown={startDrag}
@@ -151,49 +231,39 @@ export function NotebookWindow({
               className="size-3 rounded-full border border-plum/60 bg-[#ff5f57] transition-transform hover:scale-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
             />
             <h2 className="truncate font-pixel text-[8px] text-cream/80">
-              ~/Notebook/reality.txt
+              ~/Notebook/worklog.txt
             </h2>
           </header>
 
-          <div className="flex min-h-0 flex-1 gap-1 p-3" style={{ perspective: "1400px" }}>
-            {/* Left page — decorative, always the same, sells the "open book" spread. Also where a
-                flipped page visually comes to rest. */}
-            <div className="relative min-w-0 flex-1 overflow-hidden rounded-l-lg bg-cream" />
+          <div className="relative flex min-h-0 flex-1 items-start p-3 pt-6">
+            <SpiralBinding />
 
-            <div className="w-1 shrink-0 bg-plum" />
-
-            {/* Right page — current content sits underneath, revealed as the flipping page peels away. */}
-            <div className="@container relative min-w-0 flex-1 overflow-visible rounded-r-lg bg-cream">
-              {!pair ? (
+            <div
+              className={`@container relative min-h-0 min-w-0 flex-1 self-stretch overflow-hidden rounded-lg ${PAPER}`}
+            >
+              {projects.length === 0 ? (
                 <p className="flex h-full items-center justify-center p-6 text-center font-mono text-[11px] text-plum/50">
-                  no expectation/reality pairs found in the knowledge base
+                  no work projects found in the knowledge base
                 </p>
               ) : (
                 <>
                   <div className="absolute inset-0">
-                    <PageContent pair={pair} pageNumber={index + 1} />
+                    <PageContent page={page} pageNumber={index + 1} />
                   </div>
 
-                  {flippingFrom !== null && pairs[flippingFrom] && (
+                  {flippingFrom !== null && pages[flippingFrom] && (
                     <motion.div
                       key={flippingFrom}
-                      initial={{ rotateY: 0 }}
-                      animate={{ rotateY: -180 }}
-                      transition={{ duration: 0.55, ease: "easeInOut" }}
+                      initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
+                      animate={{ x: "-35%", y: "-45%", rotate: -18, opacity: 0 }}
+                      transition={{ duration: 0.45, ease: "easeIn" }}
                       onAnimationComplete={() => setFlippingFrom(null)}
-                      style={{ transformStyle: "preserve-3d", transformOrigin: "left center" }}
+                      style={{ transformOrigin: "bottom right" }}
                       className="pointer-events-none absolute inset-0 z-30"
                     >
-                      <div
-                        className="absolute inset-0 rounded-r-lg bg-cream shadow-[inset_10px_0_14px_-10px_rgba(26,22,37,0.35)]"
-                        style={{ backfaceVisibility: "hidden" }}
-                      >
-                        <PageContent pair={pairs[flippingFrom]} pageNumber={flippingFrom + 1} />
+                      <div className={`absolute inset-0 rounded-lg ${PAPER} shadow-pixel-lg`}>
+                        <PageContent page={pages[flippingFrom]} pageNumber={flippingFrom + 1} />
                       </div>
-                      <div
-                        className="absolute inset-0 rounded-l-lg bg-cream"
-                        style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                      />
                     </motion.div>
                   )}
                 </>

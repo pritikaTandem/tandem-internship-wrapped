@@ -39,6 +39,14 @@ function extractDetail(entry: string): string {
   return (inner.split(",")[0] ?? "").trim().toUpperCase();
 }
 
+function isInProgress(entry: string): boolean {
+  const parenStart = entry.indexOf("(");
+  if (parenStart === -1) return false;
+  const parenEnd = entry.indexOf(")", parenStart);
+  const inner = entry.slice(parenStart + 1, parenEnd === -1 ? undefined : parenEnd);
+  return /^in progress/i.test(inner.trim());
+}
+
 /** Deterministically derives Wrapped card data from the "WHAT I WORKED ON" section — no LLM call needed. */
 export function getWorkProjects(): WorkProject[] {
   const startIndex = KNOWLEDGE_BASE.findIndex((line) => line.startsWith(SECTION_START));
@@ -52,7 +60,8 @@ export function getWorkProjects(): WorkProject[] {
   }
 
   return entries.map((entry) => {
-    const name = extractName(entry);
-    return { name, detail: extractDetail(entry), icon: PROJECT_ICONS[name] ?? DEFAULT_ICON };
+    const baseName = extractName(entry);
+    const name = isInProgress(entry) ? `${baseName} (in progress)` : baseName;
+    return { name, detail: extractDetail(entry), icon: PROJECT_ICONS[baseName] ?? DEFAULT_ICON };
   });
 }

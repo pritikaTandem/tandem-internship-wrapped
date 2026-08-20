@@ -40,6 +40,10 @@ yarn-error.log*
 /src/data/photos.ts
 /public/photos/
 
+# work_agent notebook photos (not for the repo)
+/src/data/work-photos.ts
+/public/notebook_photos/
+
 # lock screen team photo (not for the repo)
 /src/data/team-photo.ts
 

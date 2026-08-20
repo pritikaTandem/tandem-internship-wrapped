@@ -11,13 +11,13 @@ type Exchange = { question: string; compiling: boolean };
 function PixelLoadingBar({ litBlocks }: { litBlocks: number }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-cream/70">compiling wrapped...</span>
+      <span className="text-cream/70">opening notebook...</span>
       <div className="flex gap-0.5">
         {Array.from({ length: PIXEL_BLOCK_COUNT }, (_, i) => (
           <div
             key={i}
             className={`h-3 w-2.5 border border-plum/40 ${
-              i < litBlocks ? "bg-mint" : "bg-plum/30"
+              i < litBlocks ? "bg-purple" : "bg-plum/30"
             }`}
           />
         ))}
@@ -28,10 +28,10 @@ function PixelLoadingBar({ litBlocks }: { litBlocks: number }) {
 
 export function WorkAgent({
   active,
-  onOpenWrapped,
+  onOpenNotebook,
 }: {
   active: boolean;
-  onOpenWrapped: () => void;
+  onOpenNotebook: () => void;
 }) {
   const [question, setQuestion] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
@@ -64,7 +64,7 @@ export function WorkAgent({
       setLitBlocks(block);
       if (block >= PIXEL_BLOCK_COUNT) {
         window.clearInterval(interval);
-        onOpenWrapped();
+        onOpenNotebook();
         setBusy(false);
       }
     }, PIXEL_BLOCK_MS);
