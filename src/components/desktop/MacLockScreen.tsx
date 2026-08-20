@@ -65,7 +65,7 @@ export function MacLockScreen({
       aria-label="Lock screen"
     >
       {wallpaperSrc && (
-        <div className="absolute inset-x-0 top-10 bottom-10 overflow-hidden sm:top-16 sm:bottom-16">
+        <div className="absolute inset-0 overflow-hidden">
           <Image src={wallpaperSrc} alt="" fill priority className="object-contain" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(26,22,37,0.55),rgba(26,22,37,0.25)_45%,rgba(26,22,37,0.75))]" />
         </div>
