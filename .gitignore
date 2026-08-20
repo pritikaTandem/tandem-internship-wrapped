@@ -42,7 +42,12 @@ yarn-error.log*
 
 # lock screen team photo (not for the repo)
 /src/data/team-photo.ts
-/public/team-photo.jpg
+
+# intro lock screen wallpaper + profile photo (not for the repo)
+/src/data/intro-wallpaper.ts
+/public/intro-wallpaper.jpg
+/src/data/profile-photo.ts
+/public/profile-photo.jpg
 
 # vercel
 .vercel
